@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gumloop-b2b-python-sidecar"
+version = "1.0.0"
+description = "Deterministic Python sidecar for Gumloop AI workflows, Apify B2B Actors, Twenty CRM, HubSpot, and Retool approval queues"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Trung Thanh Tran", email = "ttrungthanh90@gmail.com"}
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

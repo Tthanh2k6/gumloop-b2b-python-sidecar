@@ -1,0 +1,37 @@
+{
+  "schema_version": "2026.10",
+  "author": "Trung Thanh Tran (https://trungthanhtran.vercel.app)",
+  "apify_store": "https://apify.com/thanh81646",
+  "flows": [
+    {
+      "id": "flow_01_apify_b2b_to_crm",
+      "name": "Apify B2B Enricher -> Gumloop ICP Router -> Twenty CRM & HubSpot",
+      "nodes": [
+        {"step": 1, "type": "Webhook Trigger", "config": {"input_schema": "prepare_gumloop_lead_batch()"}},
+        {"step": 2, "type": "Subflow Loop", "config": {"concurrency": 5, "dedupe_key": "idempotency_key"}},
+        {"step": 3, "type": "Ask AI (Structured JSON)", "config": {"fields": ["icp_tier", "icp_summary", "recommended_angle"]}},
+        {"step": 4, "type": "Custom HTTP Sidecar", "config": {"handler": "build_twenty_crm_payload / build_hubspot_upsert_batch"}}
+      ]
+    },
+    {
+      "id": "flow_02_invoice_ocr_to_retool",
+      "name": "Inbound PDF Invoice -> Gumloop Extract Data -> Decimal Audit -> Retool Review Queue",
+      "nodes": [
+        {"step": 1, "type": "Gmail / Drive Trigger", "config": {"attachment_filter": ".pdf"}},
+        {"step": 2, "type": "PDF to Text + Extract Data", "config": {"schema": ["invoice_number", "vendor_name", "line_items", "tax_amount", "total_amount"]}},
+        {"step": 3, "type": "Custom HTTP Sidecar", "config": {"handler": "reconcile_invoice_extraction"}},
+        {"step": 4, "type": "Conditional Router", "config": {"if_requires_human_review": "Retool Workflow Webhook (build_retool_versioned_envelope)", "else": "QuickBooks / Xero Draft Bill"}}
+      ]
+    },
+    {
+      "id": "flow_03_ecommerce_price_intelligence",
+      "name": "Apify E-Commerce Price Tracker -> Gumloop Margin Alert -> Slack & Postgres",
+      "nodes": [
+        {"step": 1, "type": "Scheduled Trigger", "config": {"cron": "0 6 * * *"}},
+        {"step": 2, "type": "HTTP Request (Apify Actor)", "config": {"actor": "thanh81646/apify-ecommerce-price-tracker"}},
+        {"step": 3, "type": "Ask AI", "config": {"goal": "Summarize SKU undercut > 5% and suggest repricing action"}},
+        {"step": 4, "type": "PostgreSQL + Slack Notification", "config": {"channel": "#pricing-ops"}}
+      ]
+    }
+  ]
+}
