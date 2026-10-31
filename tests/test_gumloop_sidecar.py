@@ -15,17 +15,17 @@ from gumloop_sidecar import (
 def test_prepare_gumloop_lead_batch_dedupes_and_filters_noise() -> None:
     raw = [
         {
-            "website": "https://www.Pineapple.ch/about",
-            "companyName": "pineapple AG",
-            "emails": ["noreply@sentry.io", "philipp.koch@pineapple.ch", "contact@pineapple.ch"],
+            "website": "https://www.Acme.example.com/about",
+            "companyName": "Acme AG",
+            "emails": ["noreply@sentry.io", "jane.doe@acme.example.com", "contact@acme.example.com"],
             "techStack": ["Retool", "PostgreSQL", "Retool"],
             "description": "Swiss digital efficiency consultancy   with embedded analytics.",
             "countryCode": "ch",
         },
         {
-            "domain": "pineapple.ch",
+            "domain": "acme.example.com",
             "companyName": "Duplicate Entry",
-            "email": "contact@pineapple.ch",
+            "email": "contact@acme.example.com",
         },
         {
             "domain": "sentry.io",
@@ -38,9 +38,9 @@ def test_prepare_gumloop_lead_batch_dedupes_and_filters_noise() -> None:
     assert out["skipped_invalid"] == 1
 
     rec = out["records"][0]
-    assert rec["domain"] == "pineapple.ch"
-    assert rec["primary_email"] == "philipp.koch@pineapple.ch"
-    assert rec["additional_emails"] == ["contact@pineapple.ch"]
+    assert rec["domain"] == "acme.example.com"
+    assert rec["primary_email"] == "jane.doe@acme.example.com"
+    assert rec["additional_emails"] == ["contact@acme.example.com"]
     assert rec["tech_stack"] == ["PostgreSQL", "Retool"]
     assert len(rec["context_for_llm"]) <= 40
     assert len(rec["idempotency_key"]) == 24
